@@ -30,8 +30,8 @@ def write_data():
     data = request.get_json()
     data["id"] = str(idx)
     analyse(data)
-    #with open(game_data, 'w') as f:
-        #f.write(json.dumps(data))
+    with open(game_data, 'w') as f:
+        f.write(json.dumps(data))
     return "OK", 200
 
 
@@ -43,8 +43,16 @@ def index():
 
 def analyse(data):
     global deaths
-    if deaths > data["player"][0]["match_stats"][0]["deaths"]:
-        deaths = data["player"][0]["match_stats"][0]["deaths"]
+    currentDeaths = deaths
+    try:
+        currentDeaths = data["player"]["match_stats"]["deaths"]
+    except:
+        print("Player is in no match")
+        deaths = 0
+        currentDeaths = 0
+    
+    if currentDeaths > deaths:
+        deaths = data["player"]["match_stats"]["deaths"]
         print("MUTED!")
 
 
