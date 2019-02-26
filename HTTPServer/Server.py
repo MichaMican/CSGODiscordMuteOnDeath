@@ -14,11 +14,15 @@ CORS(app)
 
 game_data = "./IO/game_data.json"
 
-idx = 0
 deaths = 0
 gameRound = 0
 isMuted = False
 pause = False
+
+
+#This awesome variable is necessary because pynput is a peace of human garbage (Or maybe i implemented it wrong and i'm a peace of human garbage)
+stupidBooleanOfFUCK = False
+
 
 @app.route("/read", methods=['GET'])
 def read_data():
@@ -30,13 +34,10 @@ def read_data():
 
 @app.route("/", methods=['POST'])
 def write_data():
-    global idx
-    idx += 1
     data = request.get_json()
-    data["id"] = str(idx)
     analyse(data)
-    with open(game_data, 'w') as f:
-        f.write(json.dumps(data))
+    #with open(game_data, 'w') as f:
+        #f.write(json.dumps(data))
     return "OK", 200
 
 
@@ -50,9 +51,22 @@ def analyse(data):
     global deaths
     global gameRound
     global isMuted
+    global stupidBooleanOfFUCK
     
     currentDeaths = deaths
     currentRound = gameRound
+
+    if stupidBooleanOfFUCK:
+        stupidBooleanOfFUCK = False
+        try:
+            deaths = data["player"]["match_stats"]["deaths"]
+            gameRound = data["map"]["round"]
+            print("UPDATED")
+        except:
+            print("Player is not in a match :(")
+            deaths = 0
+            gameRound = 0
+
     try:
         currentDeaths = data["player"]["match_stats"]["deaths"]
         currentRound = data["map"]["round"]
@@ -71,19 +85,21 @@ def analyse(data):
         print("MUTED!")
 
     #This part unmutes the user
-    if currentRound > gameRound and isMuted and not pause:
-        isMuted = False
+    if currentRound > gameRound:
         gameRound = currentRound
-        unMute()
-        print("UNMUTED!")
+        if isMuted and not pause:
+            isMuted = False
+            unMute()
+            print("UNMUTED!")
 
 
 def on_press(key):
     global pause
     global deaths
-    global currentDeaths
-    global currentRound
     global gameRound
+    global stupidBooleanOfFUCK
+    global isMuted
+    
 
     keyChar = ''
     try:
@@ -95,11 +111,17 @@ def on_press(key):
     
     if keyChar == 'i':
         pause = not pause
-        print ("Pause ist "+str(pause))
+        print ("Pause ist " + str(pause))
+        if pause:
+            if isMuted:
+                isMuted = False
+                unMute()
+        if not pause:
+            stupidBooleanOfFUCK = True
+
+        
     if keyChar == 'o':
         deaths = 0
-        currentDeaths = 0
-        currentRound = 0
         gameRound = 0
         print ("RESET")
 
@@ -129,16 +151,17 @@ def mute():
 def unMute():
     keyboardOut = keyboard.Controller()
 
-    keyboardOut.press('p')
+    keyboardOut.press('k')
+    keyboardOut.press('l')
     keyboardOut.press('n')
-    keyboardOut.press('m')
-    keyboardOut.release('p')
+    keyboardOut.release('k')
+    keyboardOut.release('l')
     keyboardOut.release('n')
-    keyboardOut.release('m')
 
+
+thread = Thread(target=startKeyListener, args=())
+thread.start()
 
 if __name__ == '__main__':
-    thread = Thread(target=startKeyListener, args=())
-    thread.start()
     app.run(host='127.0.0.1', port=3000, debug=True)
     #app.run(host='0.0.0.0', port=5000)
