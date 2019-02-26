@@ -4,6 +4,8 @@
 from flask import Flask, request, render_template
 from flask_cors import CORS
 import json
+from threading import Thread, Lock
+
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +13,7 @@ CORS(app)
 game_data = "./IO/game_data.json"
 
 idx = 0
+deaths = 0
 
 @app.route("/read", methods=['GET'])
 def read_data():
@@ -26,14 +29,24 @@ def write_data():
     idx += 1
     data = request.get_json()
     data["id"] = str(idx)
-    with open(game_data, 'w') as f:
-        f.write(json.dumps(data))
+    analyse(data)
+    #with open(game_data, 'w') as f:
+        #f.write(json.dumps(data))
     return "OK", 200
 
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    #return render_template("index.html")
+    return "OK", 200
+
+
+def analyse(data):
+    global deaths
+    if deaths > data["player"][0]["match_stats"][0]["deaths"]:
+        deaths = data["player"][0]["match_stats"][0]["deaths"]
+        print("MUTED!")
+
 
 
 if __name__ == '__main__':
