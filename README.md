@@ -4,4 +4,10 @@ CS:GO Game State Integration:
 https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration
 
 ## How to Install:
-Work in Progress
+1. Install Python 3
+2. Install pip
+3. Install flask, flask_cors, pynput with pip
+4. Copy the .cfg file into the cfg folder of your CSGO installation (SteamLibrary\steamapps\common\Counter-Strike Global Offensive\csgo\cfg)
+5. Open cmd and navigate to the folder of the repository
+6. Type ``python csGoMuter``
+7. Start game
