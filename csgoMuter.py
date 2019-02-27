@@ -6,30 +6,24 @@ from flask_cors import CORS
 import json
 from threading import Thread, Lock
 from pynput import keyboard
+import time
 import os
 
 
 app = Flask(__name__)
 CORS(app)
 
-game_data = "./IO/game_data.json"
+TIME_TILL_MUTE = 5
 
 deaths = 0
 gameRound = 0
 isMuted = False
 pause = False
-
+mutingTrigger = False
+muteBlock = False
 
 #This awesome variable is necessary because pynput is a peace of human garbage (Or maybe i implemented it wrong and i'm a peace of human garbage)
 stupidBooleanOfFUCK = False
-
-
-@app.route("/read", methods=['GET'])
-def read_data():
-    data = ''
-    with open(game_data, 'r') as f:
-        data = f.read()
-    return data
 
 
 @app.route("/", methods=['POST'])
@@ -52,10 +46,12 @@ def analyse(data):
     global gameRound
     global isMuted
     global stupidBooleanOfFUCK
+    global mutingTrigger
     
     currentDeaths = deaths
     currentRound = gameRound
 
+    #Update after unpause
     if stupidBooleanOfFUCK:
         stupidBooleanOfFUCK = False
         try:
@@ -67,6 +63,7 @@ def analyse(data):
             deaths = 0
             gameRound = 0
 
+    #checking if player is in match - if so - get player data of player
     try:
         currentDeaths = data["player"]["match_stats"]["deaths"]
         currentRound = data["map"]["round"]
@@ -80,17 +77,18 @@ def analyse(data):
     #This part mutes the user
     if currentDeaths > deaths and not isMuted and not pause:
         deaths = currentDeaths
+        print("MUTE Registriert")
         isMuted = True
-        mute()
-        print("MUTED!")
+        mutingTrigger = True
+        
 
     #This part unmutes the user
     if currentRound > gameRound:
         gameRound = currentRound
         if isMuted and not pause:
+            print("UNMUTE Registriert")
             isMuted = False
-            unMute()
-            print("UNMUTED!")
+            mutingTrigger = True
 
 
 def on_press(key):
@@ -99,36 +97,31 @@ def on_press(key):
     global gameRound
     global stupidBooleanOfFUCK
     global isMuted
+    global mutingTrigger
     
-
-    keyChar = ''
-    try:
-        keyChar = format(key.char)
-    except AttributeError:
-        foo = 0
-    except:
-        print("Es gab nen fehler beim Taste einlesen - Nichts worüber man sich sorgen machen sollte")
-    
-    if keyChar == 'i':
+    #Pause the programm (in case you take over the bot)
+    if key == keyboard.Key.f5:
         pause = not pause
         print ("Pause ist " + str(pause))
         if pause:
             if isMuted:
+                print("UNMUTE Registriert")
                 isMuted = False
-                unMute()
+                mutingTrigger = True
+                
         if not pause:
             stupidBooleanOfFUCK = True
 
-        
-    if keyChar == 'o':
+    #Reset the programm (in case something went horribly wrong)
+    if key == keyboard.Key.page_down:
         deaths = 0
         gameRound = 0
         print ("RESET")
-
+        
 
 def on_release(key):
-    if key == keyboard.Key.page_down:
-        # Stop listener
+    # Stop programm
+    if key == keyboard.Key.page_up:
         os._exit(1)
         return False
 
@@ -138,29 +131,57 @@ def startKeyListener():
 
 
 def mute():
-    keyboardOut = keyboard.Controller()
-
-    keyboardOut.press('k')
-    keyboardOut.press('l')
-    keyboardOut.press('n')
-    keyboardOut.release('k')
-    keyboardOut.release('l')
-    keyboardOut.release('n')
+    global TIME_TILL_MUTE
+    global mutingTrigger
+    global muteBlock
+    while 1:
+        if mutingTrigger and isMuted:
+            mutingTrigger = False
+            muteBlock = True
+            time.sleep(TIME_TILL_MUTE)
+            muteBlock = False
+            if isMuted:
+                print("MUTED")
+                keyboardOut = keyboard.Controller()
+                keyboardOut.press('k')
+                keyboardOut.press('l')
+                keyboardOut.press('n')
+                keyboardOut.release('k')
+                keyboardOut.release('l')
+                keyboardOut.release('n')
+    
 
 
 def unMute():
-    keyboardOut = keyboard.Controller()
+    global TIME_TILL_MUTE
+    global mutingTrigger
+    global muteBlock
+    while 1:
+        if mutingTrigger and muteBlock:
+            mutingTrigger = False
+        elif mutingTrigger and not isMuted:
+            mutingTrigger = False
+            print("UNMUTED")
+            keyboardOut = keyboard.Controller()
+            keyboardOut.press('k')
+            keyboardOut.press('l')
+            keyboardOut.press('n')
+            keyboardOut.release('k')
+            keyboardOut.release('l')
+            keyboardOut.release('n')
+        
 
-    keyboardOut.press('k')
-    keyboardOut.press('l')
-    keyboardOut.press('n')
-    keyboardOut.release('k')
-    keyboardOut.release('l')
-    keyboardOut.release('n')
+
+keyListenerThread = Thread(target=startKeyListener, args=())
+muteThread = Thread(target=mute, args=())
+unMuteThread = Thread(target=unMute, args=())
 
 
-thread = Thread(target=startKeyListener, args=())
-thread.start()
+keyListenerThread.start()
+muteThread.start()
+unMuteThread.start()
+
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=3000, debug=True)
