@@ -4,4 +4,4 @@ CS:GO Game State Integration:
 https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration
 
 ## How to Install:
-<Work in Progress>
+Work in Progress
