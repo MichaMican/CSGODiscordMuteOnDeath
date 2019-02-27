@@ -32,14 +32,11 @@ stupidBooleanOfFUCK = False
 def write_data():
     data = request.get_json()
     analyse(data)
-    #with open(game_data, 'w') as f:
-        #f.write(json.dumps(data))
     return "OK", 200
 
 
 @app.route("/")
 def index():
-    #return render_template("index.html")
     return "OK", 200
 
 
@@ -152,7 +149,6 @@ def mute():
             break
         else:
             time.sleep(0.01)
-    #time.sleep(TIME_TILL_MUTE)
     muteBlock = False
     print("Muteblock deactivated")
 
@@ -187,14 +183,10 @@ def debug():
 
 
 keyListenerThread = Thread(target=startKeyListener, args=())
-#debugThread = Thread(target=debug, args=())
-muteThread = Thread(target=mute, args=())
-
 keyListenerThread.start()
-#debugThread.start()
+
 
 
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=3000, debug=True)
-    #app.run(host='0.0.0.0', port=5000)
