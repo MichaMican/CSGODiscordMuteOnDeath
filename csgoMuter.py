@@ -74,6 +74,10 @@ def analyse(data):
         currentDeaths = 0
         currentRound = 0
         gameRound = 0
+        if isMuted:
+            print("UNMUTE Registriert")
+            isMuted = False
+            unMute()
 
     print("Deaths: " + str(currentDeaths))
     print("Round: " + str(currentRound))
