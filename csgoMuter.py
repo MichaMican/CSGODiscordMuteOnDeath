@@ -14,7 +14,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-TIME_TILL_MUTE = 10
+TIME_TILL_MUTE = 4
 
 roundBlockTimer = datetime.datetime.now()
 deaths = 0
@@ -75,6 +75,19 @@ def analyse(data):
         currentRound = 0
         gameRound = 0
 
+    print("Deaths: " + str(currentDeaths))
+    print("Round: " + str(currentRound))
+
+    #This part unmutes the user
+    if currentRound > gameRound:
+        gameRound = currentRound
+        roundBlockTimer = datetime.datetime.now()
+        print("New Round")
+        if isMuted and not pause:
+            print("UNMUTE Registriert")
+            isMuted = False
+            unMute()
+
     #This part mutes the user
     if currentDeaths > deaths and not isMuted and not pause:
         deaths = currentDeaths
@@ -85,16 +98,7 @@ def analyse(data):
             mute()
         else:
             print("Mute was skipped with a timeDifference of" + str(timeDifference))
-        
 
-    #This part unmutes the user
-    if currentRound > gameRound:
-        gameRound = currentRound
-        roundBlockTimer = datetime.datetime.now()
-        if isMuted and not pause:
-            print("UNMUTE Registriert")
-            isMuted = False
-            unMute()
 
 
 def on_press(key):
