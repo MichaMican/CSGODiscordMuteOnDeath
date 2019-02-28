@@ -4,8 +4,8 @@ CS:GO Game State Integration:
 https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration
 
 ## How to Install:
-1. Install Python 3
-2. Install pip
+1. Install Python 3 (https://www.python.org/downloads/)
+(2. Install pip (If not already installed with Python))
 3. Install flask, flask_cors, pynput with pip
 4. Copy the .cfg file into the cfg folder of your CSGO installation (SteamLibrary\steamapps\common\Counter-Strike Global Offensive\csgo\cfg)
 5. Open cmd and navigate to the folder of the repository
