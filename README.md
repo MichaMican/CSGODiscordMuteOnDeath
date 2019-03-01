@@ -12,3 +12,8 @@ https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_S
 5. Open cmd and navigate to the folder of the repository
 6. Type ``python csGoMuter``
 7. Start game
+
+## How to Use:
+F6 - Pause the program
+Page up - closes the program
+Page down - Reset (incase something goes horribly wrong)
