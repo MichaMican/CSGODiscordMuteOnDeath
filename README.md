@@ -10,7 +10,7 @@ https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_S
 3. Copy the .cfg file into the cfg folder of your CSGO installation (SteamLibrary\steamapps\common\Counter-Strike Global Offensive\csgo\cfg)
 4. Set microphone in your communication program (e.g. Discord or TeamSpeak) toggle to K+L+N
 5. Open cmd and navigate to the folder of the repository
-6. Type ``python csGoMuter``
+6. Type ``python csGoMuter.py``
 7. Start game
 
 ## How to Use:
