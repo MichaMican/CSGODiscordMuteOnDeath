@@ -66,6 +66,7 @@ def analyse(data):
             print("Player is not in a match :(")
             deaths = 0
             gameRound = 0
+            init = True
             roundBlockTimer = datetime.datetime.now() - datetime.timedelta(seconds=10)
 
     #checking if player is in match - if so - get player data of player
@@ -90,6 +91,7 @@ def analyse(data):
             print("UNMUTE Registriert")
             isMuted = False
             unMute()
+        init = True
 
     if currentRoundPhase == "freezetime" and init:
         player = currentPlayer
@@ -97,6 +99,7 @@ def analyse(data):
         print("PLAYER SET TO: " + player)
 
     print("Player Name: " + currentPlayer)
+    print("Saved Player Name: " + player)
     print("Deaths: " + str(currentDeaths))
     print("Round: " + str(currentRound))
     print("SavedDeaths: " + str(deaths))
@@ -105,6 +108,7 @@ def analyse(data):
     print("Round Phase: " + currentRoundPhase)
     print("Activity: " + currentActivity)
     
+    unMuteThisRound = False
 
     #This part unmutes the user
     if currentRound > gameRound:
@@ -114,6 +118,7 @@ def analyse(data):
         print("New Round")
         if isMuted and not pause:
             print("UNMUTE Registriert")
+            unMuteThisRound = True
             isMuted = False
             unMute()
     
@@ -122,12 +127,15 @@ def analyse(data):
     if currentDeaths > deaths and not isMuted and not pause and currentPlayer == player:
         deaths = currentDeaths
         timeDifference = (datetime.datetime.now() - roundBlockTimer).total_seconds()
-        if  timeDifference > 2:
-            print("MUTE Registriert")
-            isMuted = True
-            mute()
+        if unMuteThisRound:
+            if  timeDifference > 2:
+                print("MUTE Registriert")
+                isMuted = True
+                mute()
+            else:
+                print("Mute was skipped with a timeDifference of" + str(timeDifference))
         else:
-            print("Mute was skipped with a timeDifference of" + str(timeDifference))
+            print("Mute skipt due to resent unmute")
 
 
 
