@@ -52,6 +52,7 @@ def analyse(data):
     global player
     global init
 
+    unMuteThisRound = False
     currentDeaths = deaths
     currentRound = gameRound
 
@@ -98,6 +99,11 @@ def analyse(data):
         init = False
         print("PLAYER SET TO: " + player)
 
+    if currentRoundPhase == "freezetime" and not init:
+        roundBlockTimer = datetime.datetime.now()
+        deaths = currentDeaths
+        gameRound = currentRound
+
     print("Player Name: " + currentPlayer)
     print("Saved Player Name: " + player)
     print("Deaths: " + str(currentDeaths))
@@ -107,8 +113,8 @@ def analyse(data):
     print("Phase: " + currentPhase)
     print("Round Phase: " + currentRoundPhase)
     print("Activity: " + currentActivity)
-    
-    unMuteThisRound = False
+    print("Unmute this Round: " + str(unMuteThisRound))
+    print("MUTE STATE:" + str(isMuted))
 
     #This part unmutes the user
     if currentRound > gameRound:
@@ -124,10 +130,10 @@ def analyse(data):
     
 
     #This part mutes the user
-    if currentDeaths > deaths and not isMuted and not pause and currentPlayer == player:
+    if currentDeaths > deaths and not isMuted and not pause and currentPlayer == player and currentRoundPhase != "freezetime" and currentRoundPhase != "over":
         deaths = currentDeaths
         timeDifference = (datetime.datetime.now() - roundBlockTimer).total_seconds()
-        if unMuteThisRound:
+        if not unMuteThisRound and not currentRoundPhase == "over":
             if  timeDifference > 2:
                 print("MUTE Registriert")
                 isMuted = True
