@@ -14,7 +14,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-TIME_TILL_MUTE = 10
+TIME_TILL_MUTE = 4
 
 roundBlockTimer = datetime.datetime.now()
 deaths = 0
@@ -23,6 +23,8 @@ isMuted = False
 pause = False
 mutingTrigger = False
 muteBlock = False
+player = ""
+init = True
 
 #This awesome variable is necessary because pynput is a peace of human garbage (Or maybe i implemented it wrong and i'm a peace of human garbage)
 stupidBooleanOfFUCK = False
@@ -47,7 +49,10 @@ def analyse(data):
     global isMuted
     global stupidBooleanOfFUCK
     global mutingTrigger
+    global player
+    global init
 
+    unMuteThisRound = False
     currentDeaths = deaths
     currentRound = gameRound
 
@@ -62,39 +67,82 @@ def analyse(data):
             print("Player is not in a match :(")
             deaths = 0
             gameRound = 0
+            init = True
             roundBlockTimer = datetime.datetime.now() - datetime.timedelta(seconds=10)
 
     #checking if player is in match - if so - get player data of player
     try:
         currentDeaths = data["player"]["match_stats"]["deaths"]
+        currentPlayer = data["player"]["name"]
         currentRound = data["map"]["round"]
+        currentPhase = data["map"]["phase"]
+        currentRoundPhase = data["round"]["phase"]
+        currentActivity = data["player"]["activity"]
     except:
         print("Player is not in a match")
         deaths = 0
         currentDeaths = 0
         currentRound = 0
+        currentPlayer = ""
+        currentPhase = ""
+        currentRoundPhase = ""
+        currentActivity = ""
         gameRound = 0
+        if isMuted:
+            print("UNMUTE Registriert")
+            isMuted = False
+            unMute()
+        init = True
 
-    #This part mutes the user
-    if currentDeaths > deaths and not isMuted and not pause:
+    if currentRoundPhase == "freezetime" and init:
+        player = currentPlayer
+        init = False
+        print("PLAYER SET TO: " + player)
+
+    if currentRoundPhase == "freezetime" and not init:
+        roundBlockTimer = datetime.datetime.now()
         deaths = currentDeaths
-        timeDifference = (datetime.datetime.now() - roundBlockTimer).total_seconds()
-        if  timeDifference > 2:
-            print("MUTE Registriert")
-            isMuted = True
-            mute()
-        else:
-            print("Mute was skipped with a timeDifference of" + str(timeDifference))
-        
+        gameRound = currentRound
+
+    print("Player Name: " + currentPlayer)
+    print("Saved Player Name: " + player)
+    print("Deaths: " + str(currentDeaths))
+    print("Round: " + str(currentRound))
+    print("SavedDeaths: " + str(deaths))
+    print("SavedRound: " + str(gameRound))
+    print("Phase: " + currentPhase)
+    print("Round Phase: " + currentRoundPhase)
+    print("Activity: " + currentActivity)
+    print("Unmute this Round: " + str(unMuteThisRound))
+    print("MUTE STATE:" + str(isMuted))
 
     #This part unmutes the user
     if currentRound > gameRound:
         gameRound = currentRound
+        deaths = currentDeaths
         roundBlockTimer = datetime.datetime.now()
+        print("New Round")
         if isMuted and not pause:
             print("UNMUTE Registriert")
+            unMuteThisRound = True
             isMuted = False
             unMute()
+    
+
+    #This part mutes the user
+    if currentDeaths > deaths and not isMuted and not pause and currentPlayer == player and currentRoundPhase != "freezetime" and currentRoundPhase != "over":
+        deaths = currentDeaths
+        timeDifference = (datetime.datetime.now() - roundBlockTimer).total_seconds()
+        if not unMuteThisRound and not currentRoundPhase == "over":
+            if  timeDifference > 2:
+                print("MUTE Registriert")
+                isMuted = True
+                mute()
+            else:
+                print("Mute was skipped with a timeDifference of" + str(timeDifference))
+        else:
+            print("Mute skipt due to resent unmute")
+
 
 
 def on_press(key):
