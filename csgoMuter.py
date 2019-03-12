@@ -85,6 +85,7 @@ def analyse(data):
         currentRound = 0
         currentPlayer = ""
         currentPhase = ""
+        player = ""
         currentRoundPhase = ""
         currentActivity = ""
         gameRound = 0
