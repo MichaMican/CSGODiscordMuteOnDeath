@@ -26,8 +26,8 @@ muteBlock = False
 player = ""
 init = True
 
-#This awesome variable is necessary because pynput is a peace of human garbage (Or maybe i implemented it wrong and i'm a peace of human garbage)
-stupidBooleanOfFUCK = False
+#This awesome variable is necessary because of pynput
+pinputBlocker = False
 
 
 @app.route("/", methods=['POST'])
@@ -47,7 +47,7 @@ def analyse(data):
     global deaths
     global gameRound
     global isMuted
-    global stupidBooleanOfFUCK
+    global pinputBlocker
     global mutingTrigger
     global player
     global init
@@ -57,8 +57,8 @@ def analyse(data):
     currentRound = gameRound
 
     #Update after unpause
-    if stupidBooleanOfFUCK:
-        stupidBooleanOfFUCK = False
+    if pinputBlocker:
+        pinputBlocker = False
         try:
             deaths = data["player"]["match_stats"]["deaths"]
             gameRound = data["map"]["round"]
@@ -150,7 +150,7 @@ def on_press(key):
     global pause
     global deaths
     global gameRound
-    global stupidBooleanOfFUCK
+    global pinputBlocker
     global isMuted
     global mutingTrigger
     
@@ -165,7 +165,7 @@ def on_press(key):
                 unMute()
                 
         if not pause:
-            stupidBooleanOfFUCK = True
+            pinputBlocker = True
 
     #Reset the programm (in case something went horribly wrong)
     if key == keyboard.Key.page_down:
